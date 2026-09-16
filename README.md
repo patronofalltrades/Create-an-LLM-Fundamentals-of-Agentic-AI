@@ -303,6 +303,10 @@ After training, the distribution changed. The highest entries included `didn't` 
 
 The changed probabilities show that training changed the model predictions. The model did not retrieve a stored essay response.
 
+The sketch compares the almost-flat distribution before training with the changed distribution after training. It uses the recorded probabilities from this experiment.
+
+![A hand-drawn sketch that compares next-token probabilities before and after training](docs/images/next-token-probabilities-sketch.png)
+
 ## Step 14 — Explain attention and generation
 
 The model combines each token embedding with a position embedding. It then sends the values through two transformer blocks.
@@ -310,6 +314,10 @@ The model combines each token embedding with a position embedding. It then sends
 Causal self-attention lets each token position assign weight to earlier positions. The causal mask prevents the model from reading future tokens. The context window contains no more than 48 tokens.
 
 The final model values become logits. Softmax converts the logits into next-token probabilities. The generator samples one token ID from these probabilities. It adds the new token ID to the context and repeats the process.
+
+The sketch shows how causal attention protects the next-token task. It also shows the loop that generates one token at a time.
+
+![A hand-drawn sketch of causal attention and the autoregressive token-generation loop](docs/images/attention-generation-sketch.png)
 
 ## Step 15 — Compare temperature values
 
