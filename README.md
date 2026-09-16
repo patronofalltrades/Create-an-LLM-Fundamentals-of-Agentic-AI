@@ -25,6 +25,12 @@ This README explains each process in the experiment. It also gives the measured 
 - [Temperature comparison](results/essay-baseline/temperature_comparison.json)
 - [Embedding viewer](embedding-viewer.html). Load [checkpoint.json](results/essay-baseline/checkpoint.json) in the viewer.
 
+## Visual proof of training
+
+![The bottleneck embedding before and after 3,000 training steps](docs/assets/embedding-space-training.gif)
+
+The GIF uses the recorded initial and final embedding tables from this experiment checkpoint. It selects `bottleneck`, then compares its local relationships before and after 3,000 training steps. PCA compresses the 64-number vectors into a 3D display; the neighbor scores stay calculated in the original 64-dimensional space. This is an embedding-space view of what the corpus taught the model, not a raw corpus co-occurrence graph or proof of general semantic understanding.
+
 ## Process map
 
 ```mermaid
