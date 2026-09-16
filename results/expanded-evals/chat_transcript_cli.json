@@ -1,0 +1,31 @@
+{
+  "model": "llm_runs/20260916T205727_179637Z/model.pt",
+  "model_sha256": "3c9f8f378cae2a589786c2b92c1de3114f4a8723f7b9444c3ce593492727bd16",
+  "completed_steps": 3000,
+  "fresh_context_per_prompt": true,
+  "temperature": 0.8,
+  "max_tokens": 24,
+  "turns": [
+    {
+      "prompt": "one mechanic",
+      "seed": 2026,
+      "response": "is checking the learned about the different therapist .",
+      "unknown_prompt_words": [],
+      "prompt_truncated": false
+    },
+    {
+      "prompt": "yesterday the courier",
+      "seed": 2027,
+      "response": "leaving the mechanic smooth .",
+      "unknown_prompt_words": [],
+      "prompt_truncated": false
+    },
+    {
+      "prompt": "the workshop was noisy",
+      "seed": 2028,
+      "response": "before the doors website with another software .",
+      "unknown_prompt_words": [],
+      "prompt_truncated": false
+    }
+  ]
+}

@@ -1,8 +1,25 @@
 # Assignment 3 Context
 
-Last updated: September 15, 2026
+Last updated: September 16, 2026
 
-Current state: essay baseline complete, tested, and published
+Current state: updated 48-eval experiments complete locally; not yet committed or published
+
+## Updated requirement and evidence
+
+- Keep `evals/language_evals.json` unchanged and outside training.
+- Run all 48 cases before and after training on the starter corpus.
+- Add varied teaching data for at least two categories and repeat both eval stages.
+- Preserve every case, coverage result, failure, free continuation, and separation audit.
+- Demonstrate the trained model with at least three actual interactions.
+
+The control run is in `results/starter-evals/`. The expanded grammar/opposites run
+is in `results/expanded-evals/`. Their common suite hash is
+`1d7c503f34d88260d0ac897bc36b8ba621cccc1950aef47e7121e69b2c1c9e1d`.
+The executed notebooks are `custom_llm_starter.ipynb` and
+`custom_llm_expanded.ipynb`.
+
+The earlier essay baseline remains in `results/essay-baseline/` as supplemental
+evidence and should not be presented as satisfying the new four-run requirement.
 
 ## Goal
 
@@ -69,8 +86,10 @@ The final `bottleneck` neighbors include `constraint`, `robots`, `same`, `demand
 ## Evidence locations
 
 - Grading explanation: `README.md`
-- Executed notebook: `custom_llm.ipynb`
-- Final evidence: `results/essay-baseline/`
+- Executed expanded notebook: `custom_llm.ipynb` and `custom_llm_expanded.ipynb`
+- Executed starter notebook: `custom_llm_starter.ipynb`
+- Updated eval evidence: `results/starter-evals/` and `results/expanded-evals/`
+- Earlier supplemental evidence: `results/essay-baseline/`
 - Experiment plan: `ASSIGNMENT_PLAN.md`
 - Original instructor requirements: `ASSIGNMENT.md`
 

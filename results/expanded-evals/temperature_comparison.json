@@ -1,0 +1,20 @@
+{
+  "0.3": [
+    "the new shopper was mentioned in the support report yesterday .",
+    "the team discussed the taxi and the route at the station .",
+    "the different bond was mentioned in the interest report yesterday .",
+    "our station has a question about the important bus and route ."
+  ],
+  "0.8": [
+    "the new shopper was mentioned in the support report yesterday .",
+    "our station has a question about the local taxi and traffic .",
+    "the different bond was mentioned in the interest report yesterday .",
+    "our store has a question about the important client and support ."
+  ],
+  "1.2": [
+    "the new shopper was mentioned in the support report yesterday .",
+    "our station has a question about the local taxi and traffic .",
+    "the school has a question about the important teacher and lesson .",
+    "the important truck was mentioned in the travel report yesterday ."
+  ]
+}

@@ -1,9 +1,29 @@
 # Assignment 3 Plan
 
-Plan date: September 15, 2026
+Plan date: September 16, 2026
 
-Status: baseline complete, tested, and published
+Status: updated 48-eval work complete locally; publication still required
 Repository: [Customer-LLM-Fundamentals-of-Agentic-AI](https://github.com/patronofalltrades/Customer-LLM-Fundamentals-of-Agentic-AI)
+
+## September 16 assignment update
+
+The instructor added four required 48-case result sets: starter untrained/trained
+and expanded-corpus untrained/trained. The fixed eval suite must remain outside all
+training inputs. The expanded corpus must target at least two extension categories,
+and the submission must include a working interface with three real interactions.
+
+The updated local work is complete:
+
+| Experiment | Corpus | Final result | Coverage |
+| --- | --- | ---: | ---: |
+| Starter | Classroom only | 20 / 48 | 24 / 48 |
+| Expanded | Classroom plus 109 grammar/opposites passages | 28 / 48 | 30 / 48 |
+
+Both experiments ran all 48 cases before and after 3,000 training updates. The
+expanded model scored 3/3 on grammar and 1/3 on opposites. Low scores and failures
+remain valid evidence; improvement was not a grading threshold.
+
+The old essay baseline below is supplemental. It predates the language-eval update.
 
 ## Objective
 
@@ -123,7 +143,7 @@ The 10-step run is only a setup test. It is not the final experiment.
 
 The model learned the corpus patterns. The validation loss increased after step 1,500. This result shows overfitting. The classroom patterns dominated the generated samples.
 
-## Grading check
+## Earlier baseline grading check
 
 The assignment does not give a numerical point system. Use these dimensions to check the work.
 
@@ -139,7 +159,7 @@ The assignment does not give a numerical point system. Use these dimensions to c
 | Next experiment | One controlled change and a predicted effect | Complete |
 | Public submission | Public README, notebook, and working evidence links | Complete |
 
-## Next experiment
+## Earlier proposed experiment
 
 Change only the corpus mode to `folder`. Use only the cleaned essay. Keep the other settings fixed. This experiment can show whether corpus balance caused the classroom-style output.
 
@@ -151,4 +171,8 @@ The student can later test one officially released CIA or FBI document. Use a se
 
 ## Submission state
 
-The repository is public. The final baseline is committed and pushed. The notebook renders on GitHub. The evidence links work. The course portal submission requires a separate student request.
+The earlier baseline is public. The September 16 eval update is complete and
+verified locally, but it has not yet been committed or pushed. After publication,
+verify both executed notebooks, all four eval result sets, the transcript visual,
+and every README link while signed out. Course-portal submission still requires a
+separate student request.
