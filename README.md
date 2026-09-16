@@ -10,9 +10,15 @@ The model is small. It has 135,936 parameters. It uses word and punctuation toke
 
 This README explains each process in the experiment. It also gives the measured results from the final run.
 
+## Start with the Jupyter notebook
+
+The main artifact in this repository is the fully executed [`custom_llm.ipynb`](custom_llm.ipynb) notebook. It contains the complete experiment from corpus preparation and tokenization through model training, evaluation, embedding inspection, and text generation. Its saved cell outputs show the evidence from the final 3,000-step run, so the results can be reviewed directly on GitHub without rerunning the notebook.
+
+[**Open the executed Jupyter notebook →**](custom_llm.ipynb)
+
 ## Files to inspect
 
-- [Executed notebook](custom_llm.ipynb)
+- [**Executed Jupyter notebook — primary project artifact**](custom_llm.ipynb)
 - [Assignment plan](ASSIGNMENT_PLAN.md)
 - [Assignment context](assignment-context.md)
 - [Final experiment files](results/essay-baseline/)
