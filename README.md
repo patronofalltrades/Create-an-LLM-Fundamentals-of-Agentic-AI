@@ -127,9 +127,16 @@ I first completed a separate 10-step setup test. I did not use that test as the 
 
 ## Step 4 — Write the prediction before training
 
-I predicted that the training loss and the validation loss would decrease. I expected the model to learn associations between `bottleneck`, `constraint`, `automation`, `demand`, and `AI`.
+I recorded these predictions before I trained the model.
 
-I expected the generated text to remain repetitive or incomplete. I expected low-temperature output to be more predictable. I expected high-temperature output to have more variation.
+| Measurement | Prediction before training | Reason for the prediction |
+| --- | --- | --- |
+| Training loss | The loss will decrease. | The model will learn patterns from the training passages. |
+| Validation loss | The loss will decrease. | The model will apply some learned patterns to passages that do not update its weights. |
+| Word associations | The model will learn associations between `bottleneck`, `constraint`, `automation`, `demand`, and `AI`. | These words describe related ideas in the essay corpus. |
+| Generated text | The text will remain repetitive or incomplete. | The model and corpus are small. |
+| Low-temperature output | The output will be more predictable. | A low temperature gives more probability to likely next tokens. |
+| High-temperature output | The output will have more variation. | A high temperature spreads probability across more next-token choices. |
 
 ## Step 5 — Remove duplicates and split the passages
 
