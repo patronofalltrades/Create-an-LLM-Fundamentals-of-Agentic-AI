@@ -1,86 +1,198 @@
-# Assignment 3 — Creating an LLM
+# Assignment 3 — Create a Small Language Model
 
-This repository contains my completed experiment with the course-supplied nanoGPT notebook. I trained a 135,936-parameter word-token transformer from scratch on the classroom corpus plus the main prose of my published essay, [“The New World’s Bottleneck: Jevons, Baumol, and Who Captures the Gains from AI”](https://hanif.info/posts/the-new-worlds-bottleneck.html).
+This repository contains my completed language-model experiment. I used the supplied nanoGPT notebook. I trained the model from random weights.
 
-The goal was not to create a general chatbot. It was to trace how a corpus becomes tokens, IDs, 64-number embedding vectors, next-token probabilities, loss, gradients, weight updates, and generated text.
+The training data contains the classroom corpus and the main prose from my essay, [“The New World’s Bottleneck”](https://hanif.info/posts/the-new-worlds-bottleneck.html).
+
+The model is small. It has 135,936 parameters. It uses word and punctuation tokens. It is not a general chatbot.
+
+This README explains each process in the experiment. It also gives the measured results from the final run.
+
+## Files to inspect
 
 - [Executed notebook](custom_llm.ipynb)
 - [Assignment plan](ASSIGNMENT_PLAN.md)
-- [Durable assignment context](assignment-context.md)
-- [Complete selected evidence](results/essay-baseline/)
-- [Offline embedding viewer](embedding-viewer.html) — load [`checkpoint.json`](results/essay-baseline/checkpoint.json)
+- [Assignment context](assignment-context.md)
+- [Final experiment files](results/essay-baseline/)
+- [Experiment configuration](results/essay-baseline/config.json)
+- [Corpus manifest](results/essay-baseline/corpus_manifest.json)
+- [Vocabulary report](results/essay-baseline/vocabulary_report.json)
+- [Tokenization evidence](results/essay-baseline/tokenization.json)
+- [Model inspection evidence](results/essay-baseline/inspection.json)
+- [Loss history](results/essay-baseline/history.json)
+- [Training data table](results/essay-baseline/training.csv)
+- [Training summary](results/essay-baseline/training_summary.json)
+- [Temperature comparison](results/essay-baseline/temperature_comparison.json)
+- [Embedding viewer](embedding-viewer.html). Load [checkpoint.json](results/essay-baseline/checkpoint.json) in the viewer.
 
-## Corpus, permission, and choices
+## Process map
 
-I used `CORPUS = "classroom"`, combining the supplied synthetic teaching sentences with one added Markdown file. The file contains the essay title, headings, and body. It excludes citations, footnotes, URLs, navigation, image labels, and acknowledgements.
+```mermaid
+flowchart TD
+    A[Choose permitted text] --> B[Extract the essay prose]
+    B --> C[Add the classroom corpus]
+    C --> D[Remove duplicate passages]
+    D --> E[Split passages into training and validation sets]
+    E --> F[Build the vocabulary from training text]
+    F --> G[Convert tokens to token IDs]
+    G --> H[Inspect the untrained model]
+    H --> I[Train for 3,000 weight updates]
+    I --> J[Measure training and validation loss]
+    J --> K[Compare step 0, step 1,500, and step 3,000]
+    K --> L[Inspect an embedding, gradient, and prediction]
+    L --> M[Compare three temperatures]
+    M --> N[Save the notebook and result files]
+    N --> O[Explain limits and propose the next experiment]
+```
 
-The essay was directed and edited by me. AI tools assisted with brainstorming, outlining, editing, and generating some passages. I reviewed the final text and had already published it publicly. The corpus therefore represents the final human-directed, AI-assisted document; it is not evidence of my unaided writing style.
+## Terms used in this experiment
 
-| Choice | Value | Reason |
-| --- | --- | --- |
-| Corpus | Classroom corpus plus permitted essay prose | The classroom patterns make learning inspectable, while the essay adds vocabulary around AI, constraints, automation, and demand. |
-| Training steps | 3,000 | The assignment’s recommended meaningful baseline; the separate 10-step run was only a setup check. |
-| Learning rate | `0.001` | The recommended starting rate, with warmup and cosine decay. |
+A **corpus** is the complete collection of training text.
 
-An excessively large learning rate could overshoot useful weights or destabilize loss. An excessively small rate could fail to learn enough within the budget.
+A **token** is one word or punctuation mark. The tokenizer divides each passage into tokens.
 
-### Extraction and split
+A **token ID** is the integer that represents one token. For example, the token `bottleneck` has token ID 102.
 
-The Markdown extraction produced no warnings. [`corpus_manifest.json`](results/essay-baseline/corpus_manifest.json) records the source filename, hash, preview, and counts.
+A **vector** is a list of numbers. This model represents each token with a vector that contains 64 numbers.
 
-| Corpus fact | Measured value |
+An **embedding** is a learned vector. The embedding table contains one vector for each vocabulary item.
+
+A **weight** is a number that the neural network can change. The model has 135,936 weights and other trainable parameters.
+
+The **loss** measures prediction error. A smaller loss means that the model gave more probability to the correct next tokens.
+
+A **gradient** shows how a small change to a parameter can change the loss. The AdamW optimizer uses gradients to update the parameters.
+
+## Step 1 — Select the corpus
+
+I set `CORPUS = "classroom"`. This setting combines the supplied classroom sentences with permitted files in the `corpus/` folder.
+
+I added the title, headings, and main body of my published essay. I excluded citations, footnotes, URLs, navigation text, image labels, and acknowledgements.
+
+I directed and edited the essay. AI tools helped with brainstorming, outlining, editing, and some generated passages. I reviewed the final text before I published it. The corpus is not evidence of my unaided writing style.
+
+The classroom corpus contains repeated sentence patterns. These patterns make model learning easy to inspect. The essay adds terms about AI, constraints, automation, productivity, and demand.
+
+## Step 2 — Extract and check the corpus
+
+The extraction script downloaded the public essay page. The script selected the main article text. It stopped before the footnotes and page material.
+
+The extraction produced no warnings. The [corpus manifest](results/essay-baseline/corpus_manifest.json) contains the source name, file hash, preview, and passage counts.
+
+| Corpus measurement | Result |
 | --- | ---: |
 | Essay characters | 16,620 |
-| New unique essay passages | 184 |
-| Classroom passages before combined deduplication | 6,360 |
+| New essay passages | 184 |
+| Classroom passages before deduplication | 6,360 |
 | Combined unique passages | 4,816 |
-| Duplicate passages removed | 1,728 |
-| Training passages | 4,334 |
-| Validation passages | 482 |
+| Removed duplicate passages | 1,728 |
 
-The split is 90/10 by deduplicated passage, not source file. Validation passages do not update weights, but essay passages can occur on both sides. This tests held-out passage combinations, not generalization to an unseen source.
+The notebook divides long text into passages. Each passage contains no more than 47 word or punctuation tokens.
 
-The vocabulary contained 512 entries: 509 retained training types plus `<UNK>`, `<BOS>`, and `<EOS>`. The training corpus contained 1,022 distinct types before truncation. Training unknown-token rate was **1.02%** and held-out unknown-token rate was **1.61%**, both below the notebook’s 5% warning threshold. See [`vocabulary_report.json`](results/essay-baseline/vocabulary_report.json).
+## Step 3 — Select the training settings
 
-## Prediction written before training
+| Setting | Value | Reason |
+| --- | --- | --- |
+| Corpus | Classroom corpus plus essay prose | This mix gives clear classroom patterns and essay vocabulary. |
+| Training steps | 3,000 | This is the recommended final training budget. |
+| Learning rate | `0.001` | This is the recommended initial learning rate. |
 
-I predicted that training and held-out loss would fall. I expected samples to increasingly combine *bottleneck*, *constraint*, *automation*, *demand*, and *AI* plausibly, although the model might remain repetitive, fragmented, or source-like. I also expected lower-temperature output to be more predictable and higher-temperature output to be more varied.
+The notebook uses learning-rate warmup and cosine decay. A very large learning rate can move past useful parameter values. A very small learning rate can produce too little learning in 3,000 steps.
 
-## Actual run
+I first completed a separate 10-step setup test. I did not use that test as the final experiment.
 
-| Run fact | Actual value |
+## Step 4 — Write the prediction before training
+
+I predicted that the training loss and the validation loss would decrease. I expected the model to learn associations between `bottleneck`, `constraint`, `automation`, `demand`, and `AI`.
+
+I expected the generated text to remain repetitive or incomplete. I expected low-temperature output to be more predictable. I expected high-temperature output to have more variation.
+
+## Step 5 — Remove duplicates and split the passages
+
+The notebook removed duplicate passages before the split. It then used 90% of the passages for training and 10% for validation.
+
+| Split | Passages |
+| --- | ---: |
+| Training | 4,334 |
+| Validation | 482 |
+
+Validation passages did not update the model weights. However, passages from the same essay can occur in both sets. This split does not test a completely new source document.
+
+## Step 6 — Build the vocabulary and create token IDs
+
+The notebook built the vocabulary only from the training text. It kept the 509 most frequent training token types. It also added `<UNK>`, `<BOS>`, and `<EOS>`.
+
+| Vocabulary measurement | Result |
+| --- | ---: |
+| Vocabulary entries | 512 |
+| Training token types before the limit | 1,022 |
+| Training unknown-token rate | 1.02% |
+| Validation unknown-token rate | 1.61% |
+
+`<UNK>` replaces a token that is not in the vocabulary. Both unknown-token rates are below the notebook warning level of 5%. See the [vocabulary report](results/essay-baseline/vocabulary_report.json) and [tokenization evidence](results/essay-baseline/tokenization.json).
+
+## Step 7 — Inspect the model before training
+
+The notebook created the model with random parameter values. The model had not learned the corpus at step 0.
+
+The untrained loss was approximately 6.25. The next-token probabilities were almost flat. The generated samples were random and mostly incoherent.
+
+The notebook saved this state. This state gives a fair starting point for the later comparisons.
+
+## Step 8 — Train the model
+
+The notebook used each training batch to complete this process:
+
+1. Convert passages into token IDs.
+2. Read the token and position embeddings.
+3. Use causal attention to process earlier tokens.
+4. Calculate next-token probabilities.
+5. Compare the probabilities with the correct next tokens.
+6. Calculate cross-entropy loss.
+7. Use backpropagation to calculate gradients.
+8. Use AdamW to update the parameters.
+9. Repeat the process for the next batch.
+
+The final run completed all 3,000 updates. The run had no interruption and no notebook error.
+
+| Run fact | Result |
 | --- | --- |
-| Status | Completed without interruption or notebook errors |
-| Optimizer updates | 3,000 |
-| Training-loop elapsed time | 19.19 seconds |
-| Device and hardware | CPU; Apple Silicon macOS arm64 |
-| Python / PyTorch | Python 3.9.6 / PyTorch 2.8.0 |
+| Training time | 19.19 seconds |
+| Device | Apple Silicon CPU on macOS arm64 |
+| Python | 3.9.6 |
+| PyTorch | 2.8.0 |
 | Parameters | 135,936 |
-| Architecture | 2 blocks, 4 heads, 64D embeddings, 48-token context |
-| Batch size / seed | 32 passages / 42 |
-| Evaluation panels | 20 training and 20 validation passages |
+| Transformer blocks | 2 |
+| Attention heads | 4 |
+| Embedding size | 64 numbers |
+| Context limit | 48 tokens |
+| Batch size | 32 passages |
+| Random seed | 42 |
+| Loss panels | 20 training and 20 validation passages |
 
-Exact configuration and timing are in [`config.json`](results/essay-baseline/config.json) and [`training_summary.json`](results/essay-baseline/training_summary.json). Full training rows are in [`training.csv`](results/essay-baseline/training.csv).
+See the [configuration](results/essay-baseline/config.json), [training summary](results/essay-baseline/training_summary.json), and [training table](results/essay-baseline/training.csv).
 
-## Loss evidence
+## Step 9 — Measure the loss
+
+The notebook used the same fixed loss panels at each measurement. Each panel contains 20 passages. The panel results are estimates and are not full-corpus measurements.
 
 ![Training and validation loss](results/essay-baseline/training_curves.svg)
 
-| Step | Training-panel loss | Validation-panel loss |
+| Step | Training loss | Validation loss |
 | ---: | ---: | ---: |
 | 0 | 6.2454 | 6.2732 |
 | 1,500 | 0.9090 | **1.1599** |
 | 3,000 | **0.8691** | 1.2489 |
 
-These fixed panels average all non-padding next-token targets. They are small estimates, not full-corpus loss. Complete values are in [`history.json`](results/essay-baseline/history.json).
+Both losses decreased substantially from step 0. The training loss continued to decrease after step 1,500. The validation loss increased after step 1,500. This difference is evidence of overfitting.
 
-Both losses improved dramatically from step 0. From step 1,500 to 3,000, however, training loss improved while validation loss worsened. That divergence is evidence of overfitting after the halfway point.
+See the complete values in the [loss history](results/essay-baseline/history.json).
 
-## Untrained, halfway, and final samples
+## Step 10 — Compare the generated samples
 
-Generation settings and the random seed stayed fixed. I kept every saved sample, including the garbled untrained text.
+The notebook used the same generation settings and random seed for each checkpoint. I kept all saved samples.
 
-### Step 0 — untrained
+### Step 0 — Before training
 
 ```text
 growing four price what someone southeast 000 bond week hold bottlenecks day first tutor replace teacher kept our dentist they're lesson grew developer doesn't language bus 003 cheap nurse doctor quadrant productivity
@@ -89,7 +201,7 @@ doing application leisure advance office checking five power keep replaced than 
 development both as 2000 business well growing barely always seven 700 purchase operations jobs 1865 gain efficient will increased second technology % whose mango speed fulfillment expects 65 think lecturer booking leisure
 ```
 
-### Step 1,500 — halfway
+### Step 1,500 — Halfway through training
 
 ```text
 our office has a question about the new platform and update .
@@ -98,7 +210,7 @@ the different lecturer was mentioned in the learning report yesterday .
 today the kitchen focused on juice and the new pear .
 ```
 
-### Step 3,000 — final
+### Step 3,000 — After training
 
 ```text
 our office has a question about the new platform and update .
@@ -107,90 +219,117 @@ the different lecturer was mentioned in the learning report yesterday .
 today the kitchen focused on juice and the new pear .
 ```
 
-The model changed from random sequences into grammatical classroom templates, but halfway and final samples were identical. The essay was only 184 of 4,816 unique passages, so classroom patterns dominated unconditional generation. Full files: [untrained](results/essay-baseline/samples/step_0000.txt), [halfway](results/essay-baseline/samples/step_1500.txt), and [final](results/essay-baseline/samples/step_3000.txt).
+The output changed from random token sequences to grammatical classroom patterns. The halfway samples and final samples are identical. The classroom data contains most of the corpus passages. Therefore, the classroom patterns dominate unconditional generation.
 
-## One word from text to ID to vector
+Open the complete sample files: [step 0](results/essay-baseline/samples/step_0000.txt), [step 1,500](results/essay-baseline/samples/step_1500.txt), and [step 3,000](results/essay-baseline/samples/step_3000.txt).
 
-The word **`bottleneck`** was retained and assigned token ID **102**. The ID is an integer lookup key; it selects row 102 from the token-embedding table.
+## Step 11 — Inspect one token and its embedding
 
-Initial 64-number vector:
+The token `bottleneck` has token ID 102. The ID selects row 102 from the token-embedding table.
+
+The initial 64-number vector was:
 
 ```text
 [0.035419, -0.024861, -0.033798, 0.016063, 0.030064, 0.006256, 0.003740, -0.026716, 0.006811, -0.019389, 0.003402, -0.018591, 0.009643, -0.000871, -0.002581, -0.016245, -0.003216, -0.016645, -0.007848, 0.010776, 0.007726, 0.021869, 0.009092, -0.030755, 0.003980, -0.020058, 0.009821, 0.036219, 0.011011, 0.023682, -0.002374, 0.066848, 0.012474, 0.004746, 0.020280, -0.013166, 0.000638, -0.017028, 0.031372, -0.009318, 0.022383, -0.055197, -0.003421, 0.043838, -0.005655, -0.012928, 0.013297, 0.011505, 0.009411, -0.001589, 0.040475, 0.001756, -0.024022, 0.006817, 0.003673, 0.027728, -0.004083, -0.028540, 0.031490, -0.028373, -0.036345, -0.007140, -0.012994, 0.024005]
 ```
 
-Final 64-number vector:
+The final 64-number vector was:
 
 ```text
 [0.068656, 0.082031, -0.034321, 0.033582, 0.090589, -0.067067, -0.006640, -0.126530, 0.076109, -0.034191, -0.072049, -0.040752, -0.032658, -0.082250, -0.032250, -0.074602, -0.012225, 0.138816, -0.015833, -0.031648, 0.005062, 0.018145, -0.066763, -0.000484, 0.031893, -0.041422, 0.097606, -0.120253, -0.025560, 0.021735, -0.121269, 0.056348, -0.022233, 0.068526, -0.039007, -0.032880, -0.017601, -0.057959, 0.085169, 0.044746, 0.089640, -0.091771, -0.023619, -0.013487, -0.108967, 0.005416, 0.084398, -0.002341, 0.179212, 0.056590, 0.141069, -0.023122, 0.095388, -0.169652, 0.047897, 0.029745, 0.095627, -0.029272, 0.145983, 0.002309, -0.026448, 0.087856, -0.049736, 0.059411]
 ```
 
-The vector moved by an L2 distance of about **0.554**. Before training, its closest cosine neighbors were random words such as `me`, `as`, and `worth`. After training, they included **`constraint` (0.698), `robots` (0.626), `same` (0.612), `demand` (0.591), and `matrix` (0.567)**. Those relationships match repeated essay contexts but do not prove general semantic understanding. See [`inspection.json`](results/essay-baseline/inspection.json) and [`checkpoint.json`](results/essay-baseline/checkpoint.json).
+The vector moved by an L2 distance of approximately 0.554. Before training, its nearest words were random words such as `me`, `as`, and `worth`. After training, the nearest words included `constraint` (0.698), `robots` (0.626), `same` (0.612), `demand` (0.591), and `matrix` (0.567).
 
-## Loss, gradient, and one real update
+These relationships match repeated contexts in the essay. They do not prove general semantic understanding. See the [inspection evidence](results/essay-baseline/inspection.json) and [checkpoint](results/essay-baseline/checkpoint.json).
 
-Cross-entropy loss penalizes low probability on the observed next token. Backpropagation calculates how each parameter contributed to loss. AdamW then uses gradients, momentum, adaptive scaling, weight decay, and the current learning rate to update weights.
+## Step 12 — Inspect one gradient and parameter update
 
-For coordinate 0 of the `bottleneck` embedding during the first update:
+Cross-entropy loss penalizes a low probability for the correct next token. Backpropagation calculates the gradient for each parameter. AdamW uses the gradient, optimizer state, weight decay, and learning rate to update the parameter.
+
+The first update changed coordinate 0 of the `bottleneck` embedding:
 
 | Measurement | Value |
 | --- | ---: |
-| Parameter before | 0.0354193784 |
+| Parameter before the update | 0.0354193784 |
 | Gradient | 0.0046224012 |
 | Warmup learning rate | 0.0000100000 |
-| Parameter after | 0.0354093760 |
+| Parameter after the update | 0.0354093760 |
 
-The parameter decreased slightly. Its change is not simply `learning rate × gradient` because AdamW also uses optimizer state and weight decay.
+The parameter decreased by a small amount. The change is not equal to only `learning rate × gradient`. AdamW also uses its optimizer state and weight decay.
 
-## Next-token probabilities
+## Step 13 — Inspect next-token probabilities
 
-For the prefix **“the bottleneck”**, the untrained distribution was nearly flat. Its highest entries included `bottleneck` at 0.402%, `keep` at 0.297%, and `reviewed` at 0.294%.
+The notebook used the prefix `the bottleneck`.
 
-After training, probability concentrated on essay-like continuations: `didn't` at **7.386%**, `moved` at **4.807%**, `engineers` at **2.014%**, `shifts` at **1.946%**, and `rather` at **1.946%**. This demonstrates changed predictions rather than document retrieval.
+Before training, the prediction distribution was almost flat. The highest entries included `bottleneck` at 0.402%, `keep` at 0.297%, and `reviewed` at 0.294%.
 
-## Attention, context, and generation
+After training, the distribution changed. The highest entries included `didn't` at 7.386%, `moved` at 4.807%, `engineers` at 2.014%, `shifts` at 1.946%, and `rather` at 1.946%.
 
-The model combines token and position embeddings, then passes them through two transformer blocks. Causal self-attention lets each position weight earlier positions inside the 48-token window. The causal mask prevents it from seeing future tokens. Feed-forward layers and residual connections transform the contextual representation, and final logits become probabilities through softmax.
+The changed probabilities show that training changed the model predictions. The model did not retrieve a stored essay response.
 
-Generation samples one next-token ID, appends it to the context, and repeats. It does not search the essay or copy a stored response. The vocabulary converts IDs back into words and punctuation.
+## Step 14 — Explain attention and generation
 
-## Temperature comparison
+The model combines each token embedding with a position embedding. It then sends the values through two transformer blocks.
 
-The start token, sampling seed, model weights, and procedure stayed fixed. Temperature changed only how sharply existing probabilities were sampled; it did not retrain the model.
+Causal self-attention lets each token position assign weight to earlier positions. The causal mask prevents the model from reading future tokens. The context window contains no more than 48 tokens.
 
-| Temperature | Saved result |
+The final model values become logits. Softmax converts the logits into next-token probabilities. The generator samples one token ID from these probabilities. It adds the new token ID to the context and repeats the process.
+
+## Step 15 — Compare temperature values
+
+Temperature changes the sampling distribution. It does not change the model weights. It does not retrain the model.
+
+The model, start token, seed, and sampling procedure stayed fixed. Only the temperature changed.
+
+| Temperature | Result |
 | ---: | --- |
 | 0.3 | All four samples matched the final baseline samples. |
-| 0.8 | All four samples again matched the final baseline samples. |
-| 1.2 | The first three matched; the fourth changed from “juice and the new pear” to “system and the new website.” |
+| 0.8 | All four samples matched the final baseline samples. |
+| 1.2 | The first three samples matched. The fourth sample changed from `juice and the new pear` to `system and the new website`. |
 
-The limited variation suggests that classroom continuations were sharply favored for this seed. The complete twelve outputs are in [`temperature_comparison.json`](results/essay-baseline/temperature_comparison.json).
+The small difference shows that the model strongly preferred the classroom patterns for this seed. See the full [temperature comparison](results/essay-baseline/temperature_comparison.json).
 
-## What I learned
+## Step 16 — Compare the prediction with the result
 
-The prediction was **partially supported**:
+The results partially support the prediction.
 
-- Training and held-out loss both fell dramatically from step 0.
-- The `bottleneck` embedding developed essay-related neighbors, and the prefix produced essay-like next-token probabilities.
-- Validation loss worsened after step 1,500, indicating overfitting by the final checkpoint.
-- Samples became grammatical but stayed in the much larger classroom distribution.
-- Temperature changed little because the learned distribution was strongly peaked for the fixed seed.
+- Training loss and validation loss decreased substantially from step 0.
+- The `bottleneck` embedding gained essay-related neighbors.
+- The prefix `the bottleneck` gained essay-related next-token probabilities.
+- Validation loss increased after step 1,500. This result shows overfitting.
+- Generated samples became grammatical, but classroom patterns dominated them.
+- Temperature caused little variation for the fixed seed.
 
-The central limitation is **corpus imbalance**: 184 essay passages were mixed with thousands of synthetic classroom passages. The model learned measurable essay associations without making them prominent in unconditional samples. It cannot demonstrate broad knowledge or generalization beyond short patterns in this narrow corpus.
+## Limitation
 
-### Proposed controlled next experiment
+The corpus is not balanced. The essay added 184 passages to a much larger classroom corpus. The model learned some essay associations, but unconditional samples did not show these associations clearly.
 
-Change only the corpus mode to `CORPUS = "folder"`, keeping the cleaned essay, 3,000 steps, learning rate, seed, architecture, and generation settings fixed. The essay has 184 unique passages, above the folder-only minimum of 100. I predict more essay-themed samples and stronger related probabilities, with greater overfitting risk. Because the vocabulary would change, raw loss values should be interpreted within each run rather than used to rank the corpora directly.
+The model cannot show broad knowledge or generalization. It only learns short patterns from this narrow corpus.
 
-A later Friday experiment may instead use one officially released, substantially unredacted CIA or FBI analytical document. It is deferred until the exact document’s release status, OCR quality, privacy implications, and third-party copyright are checked.
+## Proposed next experiment
 
-## Reproduce and inspect
+I will change only `CORPUS` from `classroom` to `folder`. I will keep the essay, 3,000 steps, learning rate, seed, model design, and generation settings fixed.
 
-1. Create a Python environment and install `requirements.txt`.
-2. Place the permitted essay Markdown in `corpus/`. It is Git-ignored; the public source and extraction boundary are documented above, and the exact extracted training text is preserved in [`corpus.txt`](results/essay-baseline/corpus.txt).
-3. Open `custom_llm.ipynb` in Jupyter and run all cells from the top.
-4. Keep `CORPUS = "classroom"`, `TRAINING_STEPS = 3000`, and `LEARNING_RATE = 0.001` to reproduce this baseline.
-5. Inspect the notebook outputs and [`results/essay-baseline`](results/essay-baseline/).
-6. Open `embedding-viewer.html` locally and load `results/essay-baseline/checkpoint.json`.
+The essay has 184 unique passages. This count is above the folder-only minimum of 100 passages.
 
-The notebook uses the pinned nanoGPT source at commit `3adf61e` under the included [MIT license](NANOGPT_LICENSE). No pretrained weights, external model API, GPU, backend, or deployment service was used.
+I predict that the generated text will contain more essay themes. I also predict a higher risk of overfitting. The new corpus will create a different vocabulary. Therefore, I will not use raw loss to rank the two corpora.
+
+A later experiment can use one officially released CIA or FBI document. That experiment must first check the release status, redactions, OCR quality, privacy risks, and third-party copyright.
+
+## Reproduce the experiment
+
+1. Create a Python environment.
+2. Install the packages in `requirements.txt`.
+3. Put the permitted essay Markdown file in `corpus/`.
+4. Open `custom_llm.ipynb` in Jupyter.
+5. Confirm `CORPUS = "classroom"`.
+6. Confirm `TRAINING_STEPS = 3000`.
+7. Confirm `LEARNING_RATE = 0.001`.
+8. Run all notebook cells in order.
+9. Inspect the notebook outputs.
+10. Inspect the files in [results/essay-baseline](results/essay-baseline/).
+11. Open `embedding-viewer.html`.
+12. Load `results/essay-baseline/checkpoint.json` in the viewer.
+
+The notebook uses the pinned nanoGPT source at commit `3adf61e`. The repository includes the [nanoGPT MIT license](NANOGPT_LICENSE). The experiment did not use pretrained weights, an external model API, a GPU, a backend, or a deployment service.
