@@ -1,5 +1,7 @@
 # Assignment 3 — Create a Small Language Model
 
+![A small LLM robot training on a token treadmill while training loss falls and validation loss rises](docs/assets/llm-training-gym.png)
+
 This repository contains my completed language-model experiment. I used the supplied nanoGPT notebook. I trained the model from random weights.
 
 The training data contains the classroom corpus and the main prose from my essay, [“The New World’s Bottleneck”](https://hanif.info/posts/the-new-worlds-bottleneck.html).
