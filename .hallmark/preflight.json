@@ -1,0 +1,8 @@
+{
+  "date": "2026-09-16",
+  "framework": "vanilla HTML",
+  "font_stack": "Hallmark tokens.css: display, body, mono",
+  "palette": "OKLCH custom properties in tokens.css",
+  "motion": "motion-cut; no motion library",
+  "spacing": "4-point CSS custom-property scale"
+}

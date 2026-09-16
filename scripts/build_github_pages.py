@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PUBLIC_FILES = {"embedding-viewer.html": "index.html", "tokens.css": "tokens.css"}
+PUBLIC_FILES = {"embedding-viewer.html": "index.html", "tokens.css": "tokens.css", "redesign.css": "redesign.css"}
 
 
 def main() -> None:

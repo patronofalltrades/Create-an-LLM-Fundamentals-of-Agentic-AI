@@ -55,7 +55,7 @@ invalid.push({...checkpoint,initial_embeddings:[[0,1]]});
 for(const input of invalid)assert.throws(()=>validateCheckpoint(input));
 // All resources remain local: direct file opening should not require a network.
 const stylesheetLinks=[...html.matchAll(/<link[^>]+href=["']([^"']+)["']/g)].map(match=>match[1]);
-assert.deepEqual(stylesheetLinks,['tokens.css']);
+assert.deepEqual(stylesheetLinks,['tokens.css','redesign.css']);
 assert.equal(/<script[^>]+src=|fetch\(|XMLHttpRequest|WebSocket/.test(html),false);
 console.log(`PASS: bundled checkpoint/probe, cosine, PCA eigenvectors/variance, shared basis, zero/1D data, checkpoint validation, local resources.`);
 console.log(`Pooled PCA retains ${(fit.retained*100).toFixed(4)}% variance; bottleneck neighbors after training:`,nearest(bundle.after,bundle.tokens.indexOf('bottleneck')).map(x=>[bundle.tokens[x.i],x.score]));
