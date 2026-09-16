@@ -1,0 +1,23 @@
+{
+  "files": [
+    {
+      "file": "the-new-worlds-bottleneck.md",
+      "bytes": 16621,
+      "sha256": "8acddd19ba89cba8b5db074cfe84a70556a28103eeef9dcf6037629a1165f2d2",
+      "warnings": [],
+      "characters": 16620,
+      "passages": 184,
+      "unique_passages": 184,
+      "preview": "# The New World's Bottleneck: Jevons, Baumol, and Who Captures the Gains from AI\n\nBefore my MBA, I worked on automating warehouses and manufacturing floors across Southeast Asia, including autonomous mobile robots, the kind that navigate without tracks, rerouting around obstacles in real time. To cl"
+    }
+  ],
+  "ignored": [],
+  "external_passages": 184,
+  "mode": "classroom",
+  "base_passages": 6360,
+  "unique_passages": 4816,
+  "new_unique_passages": 184,
+  "duplicates_removed": 1728,
+  "max_passage_tokens": 47,
+  "split_unit": "deduplicated passage, not source file"
+}

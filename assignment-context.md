@@ -1,7 +1,7 @@
 # Assignment 3 durable context
 
 Last updated: 2026-09-15  
-Current state: planning only; no implementation or training performed
+Current state: essay baseline implemented and trained; local final QA in progress; remote publication pending
 
 ## Goal
 
@@ -15,7 +15,7 @@ Create one public GitHub submission that uses the supplied `custom_llm.ipynb`/na
 - Reference commit observed during planning: `f520511`
 - Full planning document: `ASSIGNMENT_PLAN.md`
 
-Access note: the assignment was read via a view-only Google Docs browser export. The reference repository was inspected at commit `f520511` through GitHub and a temporary local clone. The notebook was not executed.
+Access note: the assignment was read via a view-only Google Docs browser export. The reference repository was inspected at commit `f520511`, and its pinned starter assets were imported. The notebook was executed locally in Jupyter.
 
 ## Assignment constants
 
@@ -32,18 +32,36 @@ Access note: the assignment was read via a view-only Google Docs browser export.
 - Keep split, seeds, panels, and generation settings fixed across checkpoints.
 - Temperature comparison uses the same start token and sampling seed; temperature changes inference, not weights.
 
-## Inputs still required from the student
+## Student decisions recorded on 2026-09-15
 
-Do not assume these:
+- **Baseline corpus mode:** `classroom` plus one permitted file.
+- **Essay source:** [“The New World’s Bottleneck: Jevons, Baumol, and Who Captures the Gains from AI”](https://hanif.info/posts/the-new-worlds-bottleneck.html).
+- **Corpus-file boundary:** include main essay prose only—the title, headings, and body. Exclude citations, footnotes, URLs, navigation, image labels, and acknowledgements.
+- **Provenance:** student-directed and edited with AI assistance for brainstorming, outlining, editing, and generating some passages.
+- **Publication permission:** the student is comfortable sharing the essay and derived artifacts publicly, subject to the final privacy review.
+- **Training baseline:** 3,000 optimizer updates; learning rate `0.001`; retain the notebook's default warmup and cosine decay.
+- **Pre-training prediction:** training and held-out loss should fall; samples should increasingly combine “bottleneck,” “constraint,” “automation,” “demand,” and “AI” plausibly, while potentially remaining repetitive, fragmented, or source-like. Lower temperatures should be more predictable/repetitive; higher temperatures more varied and possibly incoherent.
+- **Trace token:** `bottleneck`.
+- **Execution environment:** local Jupyter on Apple Silicon CPU.
 
-1. Corpus topic and source(s)
-2. Permission to publish source/derived artifacts
-3. Corpus mode
-4. Training-step budget
-5. Learning rate (default recommendation: 0.001)
-6. Pre-training prediction
-7. Meaningful token/word to trace
-8. Local Jupyter/VS Code vs. Colab preference
+### Friday follow-up experiment — explicitly deferred and excluded from the baseline
+
+After the essay baseline is complete, the student intends to consider a second corpus experiment on Friday using one focused, officially released CIA or FBI document. Prefer an analytical or historical document that is substantially unredacted and avoid a large case file centered on a private individual. This is not part of tomorrow's baseline and must not be sourced or implemented early.
+
+Before use, verify the exact document's official CIA Reading Room or FBI Vault URL, public-release and redaction status, machine-readable text or OCR quality, privacy implications, and any embedded third-party copyright. Use only the officially released text and never reconstruct redacted passages. Run it as a separately documented experiment, changing one variable at a time. Because a new corpus can change the vocabulary, do not rank it against the essay run solely by comparing raw loss values.
+
+## Completed baseline results
+
+- **Status:** 3,000/3,000 steps completed without interruption or notebook errors.
+- **Training runtime:** 19.19 seconds on CPU; Python 3.9.6; PyTorch 2.8.0.
+- **Model:** 135,936 parameters; 2 layers; 4 heads; 64D embeddings; 48-token context.
+- **Corpus:** 184 new unique essay passages; 4,816 combined unique passages; 4,334 train / 482 validation.
+- **Vocabulary:** 512 entries; training UNK 1.02%; held-out UNK 1.61%.
+- **Losses:** step 0 = 6.2454 train / 6.2732 validation; step 1,500 = 0.9090 / 1.1599; step 3,000 = 0.8691 / 1.2489.
+- **Interpretation:** substantial learning from baseline, but validation worsened after step 1,500 while training improved, indicating overfitting.
+- **Essay signal:** final `bottleneck` neighbors include `constraint`, `robots`, `same`, `demand`, and `matrix`; “the bottleneck” next-token probabilities shifted toward essay-like continuations.
+- **Generation limitation:** halfway and final unconditional samples were identical classroom templates because the classroom corpus dominated the mixture.
+- **Evidence location:** `results/essay-baseline/`; executed notebook: `custom_llm.ipynb`; grading narrative: `README.md`.
 
 ## Required final evidence
 
@@ -86,20 +104,10 @@ Do not assume these:
 - Token lookup embeddings are not contextual post-attention representations.
 - `checkpoint.json` and `model.pt` are not exact optimizer/random-state resume files.
 
-## Tomorrow's entry sequence
+## Next actions
 
-1. Interview student and record decisions/prediction.
-2. Inspect target repo state before modifying anything.
-3. Bring in starter assets/license with attribution; preserve user work.
-4. Set up environment; run 10-step smoke test and label it as such.
-5. Validate corpus and vocabulary reports.
-6. Freeze baseline settings/controls.
-7. Run final notebook in order.
-8. Download ZIP + executed notebook separately.
-9. Inspect exact evidence and embedding viewer.
-10. Replace README placeholders with actual values only.
-11. Verify GitHub rendering, links, privacy, and signed-out access.
-
-## Hard stop carried from today
-
-No code, corpus, training, result claims, publishing, or submission was done today. Do not fill README results until the final run supplies them.
+1. Finish local link, notebook-output, and privacy checks.
+2. Commit and push only after the user grants the required repository-write approval.
+3. Verify README rendering, notebook outputs, evidence links, and public access on GitHub.
+4. Do not submit to the course portal unless the student explicitly requests it.
+5. Keep the CIA/FBI follow-up deferred until Friday.

@@ -1,0 +1,9 @@
+__pycache__/
+.ipynb_checkpoints/
+custom_llm_smoke*.ipynb
+.venv/
+/llm_runs/
+names.txt
+.DS_Store
+/corpus/*
+!/corpus/README.md

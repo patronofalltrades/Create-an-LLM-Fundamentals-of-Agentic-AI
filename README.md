@@ -1,163 +1,196 @@
 # Assignment 3 — Creating an LLM
 
-> **Status: planning complete; implementation and training are scheduled for tomorrow.**
->
-> This repository intentionally contains no starter code, corpus, executed notebook, model, training run, generated samples, plots, or experimental results yet. Every `TBD` field below must be replaced only with evidence from the student's own completed run.
+This repository contains my completed experiment with the course-supplied nanoGPT notebook. I trained a 135,936-parameter word-token transformer from scratch on the classroom corpus plus the main prose of my published essay, [“The New World’s Bottleneck: Jevons, Baumol, and Who Captures the Gains from AI”](https://hanif.info/posts/the-new-worlds-bottleneck.html).
 
-## Purpose
+The goal was not to create a general chatbot. It was to trace how a corpus becomes tokens, IDs, 64-number embedding vectors, next-token probabilities, loss, gradients, weight updates, and generated text.
 
-This project will be the public submission for Assignment 3: a small language model trained **from scratch** with the supplied, inspectable nanoGPT notebook. The aim is to show how a permitted corpus becomes tokens, IDs, embedding vectors, next-token predictions, loss, gradients, weight updates, and generated text—not to produce a general-purpose chatbot.
+- [Executed notebook](custom_llm.ipynb)
+- [Assignment plan](ASSIGNMENT_PLAN.md)
+- [Durable assignment context](assignment-context.md)
+- [Complete selected evidence](results/essay-baseline/)
+- [Offline embedding viewer](embedding-viewer.html) — load [`checkpoint.json`](results/essay-baseline/checkpoint.json)
 
-The completed submission will be available at [patronofalltrades/Customer-LLM-Fundamentals-of-Agentic-AI](https://github.com/patronofalltrades/Customer-LLM-Fundamentals-of-Agentic-AI).
+## Corpus, permission, and choices
 
-## Today's stop point
+I used `CORPUS = "classroom"`, combining the supplied synthetic teaching sentences with one added Markdown file. The file contains the essay title, headings, and body. It excludes citations, footnotes, URLs, navigation, image labels, and acknowledgements.
 
-Today was reserved for understanding the assignment, its boundaries, and its grading evidence. The work completed today is:
+The essay was directed and edited by me. AI tools assisted with brainstorming, outlining, editing, and generating some passages. I reviewed the final text and had already published it publicly. The corpus therefore represents the final human-directed, AI-assisted document; it is not evidence of my unaided writing style.
 
-- a detailed [assignment plan](ASSIGNMENT_PLAN.md);
-- a durable [assignment context](assignment-context.md) for resuming tomorrow; and
-- this evidence-first README scaffold.
-
-No implementation decision has been made on the student's behalf. In particular, no corpus was selected, no source-material permission was asserted, no training settings were finalized, and no run was performed. The reference project's results are **not** this student's results and will not be presented as such.
-
-## Assignment scope and fixed boundaries
-
-The planned baseline uses the course-supplied `custom_llm.ipynb` and the pinned nanoGPT implementation. It is a compact word/punctuation-token transformer trained from scratch with PyTorch and AdamW—no pretrained weights, external model API, GPU purchase, web app, backend, or deployment is required.
-
-The supplied classroom configuration has 2 transformer blocks, 4 attention heads, 64-dimensional token and position embeddings, and a 48-token context window. The word tokenizer is a classroom adaptation, not a claim about nanoGPT's default tokenizer.
-
-For a fair before/during/after comparison, the final experiment will keep its train/validation split, fixed evaluation panels, random seed, and baseline generation settings unchanged. The temperature comparison will use the same starting token and sampling seed; it changes sampling at inference, never the trained weights.
-
-## Student decision record — complete before training
-
-| Required decision | Student answer | Reason / evidence to record |
+| Choice | Value | Reason |
 | --- | --- | --- |
-| Corpus mode | **TBD** — `classroom`, `classroom + permitted files`, or `folder` only | Why this corpus is appropriate for a small language model |
-| Corpus topic and source(s) | **TBD** | Source names/links and what patterns they can and cannot teach |
-| Permission to publish sources and derived artifacts | **TBD** | Explicit confirmation; remove or withhold material that cannot be public |
-| Unique added passages | **TBD after validation** | `0` if classroom-only; folder-only requires at least 100 distinct passages |
-| Training steps | **TBD** | A 10-step run is setup only; the recommended meaningful baseline is 3,000 optimizer updates |
-| Learning rate | **TBD** | Start from `0.001` unless a justified alternative is chosen; explain too-large vs. too-small updates |
-| Pre-training prediction | **TBD** | A testable expectation written before seeing final results |
-| Token/word to trace | **TBD** | A meaningful retained word to follow from text to ID, 64D vector, probabilities, gradient, and update |
-| Environment | **TBD** — local Jupyter/VS Code or Colab | Hardware/runtime details to report after the actual run |
+| Corpus | Classroom corpus plus permitted essay prose | The classroom patterns make learning inspectable, while the essay adds vocabulary around AI, constraints, automation, and demand. |
+| Training steps | 3,000 | The assignment’s recommended meaningful baseline; the separate 10-step run was only a setup check. |
+| Learning rate | `0.001` | The recommended starting rate, with warmup and cosine decay. |
 
-## Tomorrow's workflow
+An excessively large learning rate could overshoot useful weights or destabilize loss. An excessively small rate could fail to learn enough within the budget.
 
-1. Interview the student and record the decision table and prediction above.
-2. Inspect this repository before adding anything; then bring in the supplied starter materials with attribution and the nanoGPT MIT license.
-3. Set up the Python environment or Colab notebook and run a **10-step smoke test**, labeled only as a setup check.
-4. Add only approved PDF, UTF-8 TXT, or UTF-8 Markdown source files; review extraction previews, warnings, duplicate removal, passage counts, `corpus_manifest.json`, and `vocabulary_report.json`.
-5. Freeze one baseline: corpus mode, training steps, learning rate, split, seed, evaluation panels, and generation settings. Optional experiments come only after this baseline.
-6. Run the notebook from top to bottom and keep all untrained, halfway, final, empty, and garbled outputs.
-7. Save the final artifacts, download the complete results ZIP, and download the executed notebook separately (the ZIP does not include the active notebook).
-8. Replace this scaffold's `TBD` fields with exact values from the notebook and artifacts—never reconstructed or reference values.
-9. Review privacy, render the notebook and README on GitHub, test every link while signed out, and only then submit the public repository URL through the course portal.
+### Extraction and split
 
-## Planned experiment controls and limitations
+The Markdown extraction produced no warnings. [`corpus_manifest.json`](results/essay-baseline/corpus_manifest.json) records the source filename, hash, preview, and counts.
 
-- Passages are deduplicated before the planned 90/10 train/validation split. Validation passages do not update weights, but passages from the same source file can land on both sides; this does not test unseen-source generalization.
-- Fixed loss panels contain at most 20 training and 20 validation passages. Their losses are estimates, not full-corpus measurements, and losses from different corpora/vocabularies are not directly comparable.
-- Long documents are split into non-overlapping passages of at most 47 word/punctuation tokens. The vocabulary keeps the 509 most common training types plus `UNK`, `BOS`, and `EOS` (up to 512 total); training and held-out unknown-token rates must be reported.
-- A falling training loss alone does not demonstrate generalization. Plausible output from a small or template-heavy corpus does not show broad knowledge or language understanding.
-- Token lookup embeddings are not context-dependent representations after attention. A 3D PCA embedding view is lossy; cosine-neighbor comparisons use the full 64-dimensional vectors.
-- `checkpoint.json` and `model.pt` are useful saved artifacts, but neither is an exact resume checkpoint with optimizer and random state.
+| Corpus fact | Measured value |
+| --- | ---: |
+| Essay characters | 16,620 |
+| New unique essay passages | 184 |
+| Classroom passages before combined deduplication | 6,360 |
+| Combined unique passages | 4,816 |
+| Duplicate passages removed | 1,728 |
+| Training passages | 4,334 |
+| Validation passages | 482 |
 
-## Evidence that will be added after the final run
+The split is 90/10 by deduplicated passage, not source file. Validation passages do not update weights, but essay passages can occur on both sides. This tests held-out passage combinations, not generalization to an unseen source.
 
-All links in this section are intentionally pending. The final README will link real committed artifacts and display actual notebook outputs.
+The vocabulary contained 512 entries: 509 retained training types plus `<UNK>`, `<BOS>`, and `<EOS>`. The training corpus contained 1,022 distinct types before truncation. Training unknown-token rate was **1.02%** and held-out unknown-token rate was **1.61%**, both below the notebook’s 5% warning threshold. See [`vocabulary_report.json`](results/essay-baseline/vocabulary_report.json).
 
-### Run facts and reproducibility
+## Prediction written before training
 
-| Item | Actual value / link |
+I predicted that training and held-out loss would fall. I expected samples to increasingly combine *bottleneck*, *constraint*, *automation*, *demand*, and *AI* plausibly, although the model might remain repetitive, fragmented, or source-like. I also expected lower-temperature output to be more predictable and higher-temperature output to be more varied.
+
+## Actual run
+
+| Run fact | Actual value |
 | --- | --- |
-| Executed notebook | **TBD** — [`custom_llm.ipynb`](custom_llm.ipynb) with all final outputs visible |
-| Final run status and completed steps | **TBD** |
-| Elapsed time and hardware | **TBD** |
-| Parameter count | **TBD** |
-| Corpus/document count and 90/10 split sizes | **TBD** |
-| Vocabulary size | **TBD** |
-| Training / held-out unknown-token rates | **TBD** |
-| Configuration | **TBD** — [`config.json`](config.json) |
-| Training summary | **TBD** — [`training_summary.json`](training_summary.json) |
-| Full training rows | **TBD** — [`training.csv`](training.csv) |
-| Corpus extraction and duplicates | **TBD, if safe to share** — [`corpus_manifest.json`](corpus_manifest.json) |
-| Vocabulary coverage | **TBD** — [`vocabulary_report.json`](vocabulary_report.json) |
+| Status | Completed without interruption or notebook errors |
+| Optimizer updates | 3,000 |
+| Training-loop elapsed time | 19.19 seconds |
+| Device and hardware | CPU; Apple Silicon macOS arm64 |
+| Python / PyTorch | Python 3.9.6 / PyTorch 2.8.0 |
+| Parameters | 135,936 |
+| Architecture | 2 blocks, 4 heads, 64D embeddings, 48-token context |
+| Batch size / seed | 32 passages / 42 |
+| Evaluation panels | 20 training and 20 validation passages |
 
-If a run is interrupted or fails, this section will state what happened, how many steps completed, and which evidence was still saved. It will not be hidden or relabeled as a complete run.
+Exact configuration and timing are in [`config.json`](results/essay-baseline/config.json) and [`training_summary.json`](results/essay-baseline/training_summary.json). Full training rows are in [`training.csv`](results/essay-baseline/training.csv).
 
-### Losses and samples
+## Loss evidence
 
-The completed README will embed [`training_curves.svg`](training_curves.svg), link [`history.json`](history.json), and list every measured value from the fixed panels. Panel sizes will be stated alongside the table.
+![Training and validation loss](results/essay-baseline/training_curves.svg)
 
 | Step | Training-panel loss | Validation-panel loss |
 | ---: | ---: | ---: |
-| 0 | **TBD** | **TBD** |
-| halfway: **TBD** | **TBD** | **TBD** |
-| final: **TBD** | **TBD** | **TBD** |
+| 0 | 6.2454 | 6.2732 |
+| 1,500 | 0.9090 | **1.1599** |
+| 3,000 | **0.8691** | 1.2489 |
 
-The untrained, halfway, and final samples—including any empty or garbled text—will be quoted here and linked to their full saved files:
+These fixed panels average all non-padding next-token targets. They are small estimates, not full-corpus loss. Complete values are in [`history.json`](results/essay-baseline/history.json).
 
-| Checkpoint | Same fixed generation settings? | Sample / link | Observation |
-| --- | --- | --- | --- |
-| Untrained | **TBD** | **TBD** | **TBD** |
-| Halfway | **TBD** | **TBD** | **TBD** |
-| Final | **TBD** | **TBD** | **TBD** |
+Both losses improved dramatically from step 0. From step 1,500 to 3,000, however, training loss improved while validation loss worsened. That divergence is evidence of overfitting after the halfway point.
 
-### From text to learned predictions
+## Untrained, halfway, and final samples
 
-The student will fill the following from [`tokenization.json`](tokenization.json) and [`inspection.json`](inspection.json), using a real retained token and exact notebook values.
+Generation settings and the random seed stayed fixed. I kept every saved sample, including the garbled untrained text.
 
-| Evidence | Actual value and explanation |
-| --- | --- |
-| Word/token | **TBD** |
-| Token ID | **TBD** — an integer lookup key, not the embedding itself |
-| Initial 64-number token-lookup vector | **TBD** |
-| Final 64-number token-lookup vector | **TBD** |
-| One prefix and next-token probability comparison | **TBD** |
-| Saved parameter value before update | **TBD** |
-| Gradient for that parameter | **TBD** |
-| Parameter value after optimizer update | **TBD** |
+### Step 0 — untrained
 
-The final explanation will connect these facts: text is tokenized; IDs index learned embedding vectors; the causal transformer combines each position with earlier context only; it produces next-token probabilities; loss measures mismatch with the observed next token; backpropagation calculates gradients; AdamW updates weights. It will distinguish token lookup vectors from contextual representations and describe the actual evidence rather than assigning individual vector coordinates human-readable meanings.
+```text
+growing four price what someone southeast 000 bond week hold bottlenecks day first tutor replace teacher kept our dentist they're lesson grew developer doesn't language bus 003 cheap nurse doctor quadrant productivity
+test volume operations management it productivity called demand hour what system efficiency competing needed higher do times enough harvest so cut payment consumption iese over went kept hold constraint right educator standing
+doing application leisure advance office checking five power keep replaced than paradox compared interest power fall my expects disappear barely factory learning 000 and 1930 sitting as code against update teaching capital
+development both as 2000 business well growing barely always seven 700 purchase operations jobs 1865 gain efficient will increased second technology % whose mango speed fulfillment expects 65 think lecturer booking leisure
+```
 
-### Temperature comparison
+### Step 1,500 — halfway
 
-The final README will link [`temperature_comparison.json`](temperature_comparison.json) and compare three temperatures with the same starting token and sampling seed.
+```text
+our office has a question about the new platform and update .
+the new teacher was mentioned in the lesson report yesterday .
+the different lecturer was mentioned in the learning report yesterday .
+today the kitchen focused on juice and the new pear .
+```
 
-| Temperature | Actual sample | What changed? | Did weights change? |
-| ---: | --- | --- | --- |
-| **TBD** | **TBD** | **TBD** | No — inference sampling only |
-| **TBD** | **TBD** | **TBD** | No — inference sampling only |
-| **TBD** | **TBD** | **TBD** | No — inference sampling only |
+### Step 3,000 — final
 
-## Interpretation, limitation, and next experiment
+```text
+our office has a question about the new platform and update .
+the new teacher was mentioned in the lesson report yesterday .
+the different lecturer was mentioned in the learning report yesterday .
+today the kitchen focused on juice and the new pear .
+```
 
-After training, this section will answer these questions using the actual loss curves, held-out panel, samples, vectors, probabilities, gradient, and update:
+The model changed from random sequences into grammatical classroom templates, but halfway and final samples were identical. The essay was only 184 of 4,816 unique passages, so classroom patterns dominated unconditional generation. Full files: [untrained](results/essay-baseline/samples/step_0000.txt), [halfway](results/essay-baseline/samples/step_1500.txt), and [final](results/essay-baseline/samples/step_3000.txt).
 
-- Did the evidence support the pre-training prediction? **TBD**
-- What can the chosen corpus teach, and what is outside its scope? **TBD**
-- What does the training/validation comparison support—and not support—about generalization? **TBD**
-- One observed limitation: **TBD**
-- One controlled next experiment (change one variable, why, and predicted effect): **TBD**
+## One word from text to ID to vector
 
-## Privacy and publication review
+The word **`bottleneck`** was retained and assigned token ID **102**. The ID is an integer lookup key; it selects row 102 from the token-embedding table.
 
-Only material that the student has permission to use **and publicly share** will be placed in or derived into this repository. `corpus/` will be Git-ignored after starter materials are added, but that is not a privacy guarantee: extracted text, filenames, hashes, samples, notebook outputs, and learned weights may expose source information. Before publishing, the student will review the executed notebook and every artifact for confidential, personal, copyrighted, or otherwise restricted information.
+Initial 64-number vector:
 
-Supported added inputs are PDF, UTF-8 TXT, and UTF-8 Markdown. Scanned PDFs require OCR; encrypted, unreadable, or entirely textless PDFs stop the run, and partly textless PDFs produce warnings. The planned review will document these warnings and the resolution rather than silently ignoring them.
+```text
+[0.035419, -0.024861, -0.033798, 0.016063, 0.030064, 0.006256, 0.003740, -0.026716, 0.006811, -0.019389, 0.003402, -0.018591, 0.009643, -0.000871, -0.002581, -0.016245, -0.003216, -0.016645, -0.007848, 0.010776, 0.007726, 0.021869, 0.009092, -0.030755, 0.003980, -0.020058, 0.009821, 0.036219, 0.011011, 0.023682, -0.002374, 0.066848, 0.012474, 0.004746, 0.020280, -0.013166, 0.000638, -0.017028, 0.031372, -0.009318, 0.022383, -0.055197, -0.003421, 0.043838, -0.005655, -0.012928, 0.013297, 0.011505, 0.009411, -0.001589, 0.040475, 0.001756, -0.024022, 0.006817, 0.003673, 0.027728, -0.004083, -0.028540, 0.031490, -0.028373, -0.036345, -0.007140, -0.012994, 0.024005]
+```
 
-## How the completed work will be inspected and reproduced
+Final 64-number vector:
 
-When implementation begins, the final repository will include the starter's environment instructions and the executed `custom_llm.ipynb`. A reviewer will be able to install the documented dependencies (or open the notebook in Colab), place only permitted inputs in `corpus/` when applicable, select the recorded corpus mode/steps/learning rate, and run the notebook from the top.
+```text
+[0.068656, 0.082031, -0.034321, 0.033582, 0.090589, -0.067067, -0.006640, -0.126530, 0.076109, -0.034191, -0.072049, -0.040752, -0.032658, -0.082250, -0.032250, -0.074602, -0.012225, 0.138816, -0.015833, -0.031648, 0.005062, 0.018145, -0.066763, -0.000484, 0.031893, -0.041422, 0.097606, -0.120253, -0.025560, 0.021735, -0.121269, 0.056348, -0.022233, 0.068526, -0.039007, -0.032880, -0.017601, -0.057959, 0.085169, 0.044746, 0.089640, -0.091771, -0.023619, -0.013487, -0.108967, 0.005416, 0.084398, -0.002341, 0.179212, 0.056590, 0.141069, -0.023122, 0.095388, -0.169652, 0.047897, 0.029745, 0.095627, -0.029272, 0.145983, 0.002309, -0.026448, 0.087856, -0.049736, 0.059411]
+```
 
-For grading, rerunning should not be necessary: the executed notebook, loss curve, full loss data, sample timeline, configuration, tokenization/inspection evidence, and temperature comparison will remain visible and linked. The complete results ZIP will be retained locally as a backup; the executed notebook will be preserved separately.
+The vector moved by an L2 distance of about **0.554**. Before training, its closest cosine neighbors were random words such as `me`, `as`, and `worth`. After training, they included **`constraint` (0.698), `robots` (0.626), `same` (0.612), `demand` (0.591), and `matrix` (0.567)**. Those relationships match repeated essay contexts but do not prove general semantic understanding. See [`inspection.json`](results/essay-baseline/inspection.json) and [`checkpoint.json`](results/essay-baseline/checkpoint.json).
 
-## Sources and attribution
+## Loss, gradient, and one real update
 
-- [Assignment instructions](https://docs.google.com/document/d/1MQ3YQl2ywWZF7W5_l_91FiIp7pTYPO_3viI2JVapRcc/edit?tab=t.0)
-- [Course reference repository](https://github.com/pepealonso95/custom-llm)
-- [Course student README template](https://github.com/pepealonso95/custom-llm/blob/main/STUDENT_README.md)
-- [Pinned nanoGPT model source](https://github.com/karpathy/nanoGPT/blob/3adf61e154c3fe3fca428ad6bc3818b27a3b8291/model.py) (MIT license will be included with the starter materials)
+Cross-entropy loss penalizes low probability on the observed next token. Backpropagation calculates how each parameter contributed to loss. AdamW then uses gradients, momentum, adaptive scaling, weight decay, and the current learning rate to update weights.
 
-The assignment instructions are authoritative. This README is a planning-stage scaffold based on them and will be updated only after the student's interview and final experiment.
+For coordinate 0 of the `bottleneck` embedding during the first update:
+
+| Measurement | Value |
+| --- | ---: |
+| Parameter before | 0.0354193784 |
+| Gradient | 0.0046224012 |
+| Warmup learning rate | 0.0000100000 |
+| Parameter after | 0.0354093760 |
+
+The parameter decreased slightly. Its change is not simply `learning rate × gradient` because AdamW also uses optimizer state and weight decay.
+
+## Next-token probabilities
+
+For the prefix **“the bottleneck”**, the untrained distribution was nearly flat. Its highest entries included `bottleneck` at 0.402%, `keep` at 0.297%, and `reviewed` at 0.294%.
+
+After training, probability concentrated on essay-like continuations: `didn't` at **7.386%**, `moved` at **4.807%**, `engineers` at **2.014%**, `shifts` at **1.946%**, and `rather` at **1.946%**. This demonstrates changed predictions rather than document retrieval.
+
+## Attention, context, and generation
+
+The model combines token and position embeddings, then passes them through two transformer blocks. Causal self-attention lets each position weight earlier positions inside the 48-token window. The causal mask prevents it from seeing future tokens. Feed-forward layers and residual connections transform the contextual representation, and final logits become probabilities through softmax.
+
+Generation samples one next-token ID, appends it to the context, and repeats. It does not search the essay or copy a stored response. The vocabulary converts IDs back into words and punctuation.
+
+## Temperature comparison
+
+The start token, sampling seed, model weights, and procedure stayed fixed. Temperature changed only how sharply existing probabilities were sampled; it did not retrain the model.
+
+| Temperature | Saved result |
+| ---: | --- |
+| 0.3 | All four samples matched the final baseline samples. |
+| 0.8 | All four samples again matched the final baseline samples. |
+| 1.2 | The first three matched; the fourth changed from “juice and the new pear” to “system and the new website.” |
+
+The limited variation suggests that classroom continuations were sharply favored for this seed. The complete twelve outputs are in [`temperature_comparison.json`](results/essay-baseline/temperature_comparison.json).
+
+## What I learned
+
+The prediction was **partially supported**:
+
+- Training and held-out loss both fell dramatically from step 0.
+- The `bottleneck` embedding developed essay-related neighbors, and the prefix produced essay-like next-token probabilities.
+- Validation loss worsened after step 1,500, indicating overfitting by the final checkpoint.
+- Samples became grammatical but stayed in the much larger classroom distribution.
+- Temperature changed little because the learned distribution was strongly peaked for the fixed seed.
+
+The central limitation is **corpus imbalance**: 184 essay passages were mixed with thousands of synthetic classroom passages. The model learned measurable essay associations without making them prominent in unconditional samples. It cannot demonstrate broad knowledge or generalization beyond short patterns in this narrow corpus.
+
+### Proposed controlled next experiment
+
+Change only the corpus mode to `CORPUS = "folder"`, keeping the cleaned essay, 3,000 steps, learning rate, seed, architecture, and generation settings fixed. The essay has 184 unique passages, above the folder-only minimum of 100. I predict more essay-themed samples and stronger related probabilities, with greater overfitting risk. Because the vocabulary would change, raw loss values should be interpreted within each run rather than used to rank the corpora directly.
+
+A later Friday experiment may instead use one officially released, substantially unredacted CIA or FBI analytical document. It is deferred until the exact document’s release status, OCR quality, privacy implications, and third-party copyright are checked.
+
+## Reproduce and inspect
+
+1. Create a Python environment and install `requirements.txt`.
+2. Place the permitted essay Markdown in `corpus/`. It is Git-ignored; the public source and extraction boundary are documented above, and the exact extracted training text is preserved in [`corpus.txt`](results/essay-baseline/corpus.txt).
+3. Open `custom_llm.ipynb` in Jupyter and run all cells from the top.
+4. Keep `CORPUS = "classroom"`, `TRAINING_STEPS = 3000`, and `LEARNING_RATE = 0.001` to reproduce this baseline.
+5. Inspect the notebook outputs and [`results/essay-baseline`](results/essay-baseline/).
+6. Open `embedding-viewer.html` locally and load `results/essay-baseline/checkpoint.json`.
+
+The notebook uses the pinned nanoGPT source at commit `3adf61e` under the included [MIT license](NANOGPT_LICENSE). No pretrained weights, external model API, GPU, backend, or deployment service was used.

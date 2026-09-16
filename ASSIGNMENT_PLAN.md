@@ -1,7 +1,7 @@
 # Assignment 3 — Creating an LLM: Plan
 
 Planning date: September 15, 2026  
-Status: planning complete; implementation intentionally deferred  
+Status: baseline implementation and training complete; final repository QA pending
 Target submission repository: [patronofalltrades/Customer-LLM-Fundamentals-of-Agentic-AI](https://github.com/patronofalltrades/Customer-LLM-Fundamentals-of-Agentic-AI)
 
 ## 1. Assignment in one sentence
@@ -18,7 +18,7 @@ This is an understanding-and-evidence assignment, not a contest to build the lar
 - [Student README template](https://github.com/pepealonso95/custom-llm/blob/main/STUDENT_README.md)
 - [Pinned nanoGPT model source](https://github.com/karpathy/nanoGPT/blob/3adf61e154c3fe3fca428ad6bc3818b27a3b8291/model.py)
 
-Source-access note: the Google Doc was read in view-only mode and exported to Markdown through the authenticated browser. The reference repository was inspected at commit `f520511` through GitHub and a temporary local clone. The starter files were reviewed, but the notebook was not executed and no assignment code was implemented.
+Source-access note: the Google Doc was read in view-only mode and exported to Markdown through the authenticated browser. The reference repository was inspected at commit `f520511` and its pinned starter files were used. A local Jupyter kernel executed both the 10-step setup run and the 3,000-step baseline.
 
 ## 3. Required outcome and deliverable
 
@@ -42,7 +42,13 @@ Keep the complete results ZIP locally. The ZIP does not contain the currently op
 
 ## 4. The three student decisions
 
-These should be decided in the student interview before implementation.
+The student interview is complete. The baseline decisions are:
+
+- `CORPUS = "classroom"` plus one permitted Markdown or TXT file made from the main prose of [“The New World’s Bottleneck: Jevons, Baumol, and Who Captures the Gains from AI”](https://hanif.info/posts/the-new-worlds-bottleneck.html).
+- Include the title, headings, and body paragraphs; exclude citations, footnotes, URLs, navigation, image labels, and acknowledgements.
+- Disclose that the essay was student-directed and edited with AI assistance for brainstorming, outlining, editing, and generating some passages.
+- Train for 3,000 optimizer steps at learning rate `0.001`, retaining the notebook's default warmup and cosine decay.
+- Prediction: training and held-out loss should fall, while samples should increasingly combine the essay's recurring concepts but may remain repetitive, fragmented, or source-like. Lower-temperature samples should be more predictable; higher-temperature samples should be more varied and potentially incoherent.
 
 ### Corpus
 
@@ -143,7 +149,7 @@ The supplied sources do **not** state a numerical point allocation. The followin
 | Next experiment | One specific change, reason, and predicted effect; second run optional | Proposing several uncontrolled changes without a hypothesis |
 | Public submission quality | README works as entry point; evidence links resolve while signed out; notebook renders on GitHub | Broken/private links or evidence available only locally |
 
-## 8. Phased implementation plan for tomorrow
+## 8. Phased implementation plan — baseline completed
 
 ### Phase 0 — Interview and decisions
 
@@ -255,20 +261,20 @@ Acceptance check: a reader can grade the work from the README without rerunning 
 - Publishing broken/private evidence links
 - Claiming fluent text proves understanding or broad knowledge
 
-## 10. Stop point for today
+## 10. Baseline completion status
 
-Today ends after:
+Completed:
 
-- understanding the assignment and its evidence requirements
-- documenting limitations and the operative rubric
-- preparing this phased plan and the durable context file
-- preparing for the student interview and README planning
+- imported the pinned starter notebook and nanoGPT source with its license
+- created the agreed main-prose essay corpus with no extraction warnings
+- completed a separate 10-step Jupyter setup run
+- completed the 3,000-step baseline at learning rate `0.001`
+- preserved the executed notebook and complete selected evidence
+- replaced README placeholders with actual measurements and honest interpretation
 
-Do **not** today:
+Still pending:
 
-- clone or copy starter code into the submission repository
-- choose the student's corpus on their behalf
-- run training
-- generate or fabricate experimental values
-- write a results README as though a run has occurred
-- publish or submit the repository
+- commit and push the completed baseline after user authorization
+- verify GitHub notebook rendering, evidence links, and signed-out public access
+- submit the repository URL only when the student requests submission
+- keep the CIA/FBI corpus experiment deferred until Friday
