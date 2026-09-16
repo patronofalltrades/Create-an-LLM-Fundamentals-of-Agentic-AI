@@ -47,21 +47,32 @@ flowchart TD
 
 ## Terms used in this experiment
 
-A **corpus** is the complete collection of training text.
+| Term | Meaning | Example from this experiment |
+| --- | --- | --- |
+| Corpus | The complete collection of training text. | The classroom text and essay prose form the corpus. |
+| Token | One word or punctuation mark. | `bottleneck` and `.` are tokens. |
+| Token ID | The integer that represents one token. | `bottleneck` has token ID 102. |
+| Vector | A list of numbers. | Each token vector contains 64 numbers. |
+| Embedding | A learned vector for one vocabulary item. | Row 102 of the embedding table represents `bottleneck`. |
+| Weight | A number that the neural network can change. | The model has 135,936 trainable parameters. |
+| Loss | A measurement of prediction error. | A smaller loss means a better next-token prediction. |
+| Gradient | A value that shows how a parameter can change the loss. | AdamW uses the gradient to update a parameter. |
 
-A **token** is one word or punctuation mark. The tokenizer divides each passage into tokens.
+## Tokenization process
 
-A **token ID** is the integer that represents one token. For example, the token `bottleneck` has token ID 102.
+The tokenizer changes text into a form that the model can process. It converts the text to lowercase. It then divides the text into word and punctuation tokens. The vocabulary replaces each token with its token ID. The embedding table maps each token ID to a vector of 64 numbers.
 
-A **vector** is a list of numbers. This model represents each token with a vector that contains 64 numbers.
+The following example uses actual token IDs from the final vocabulary.
 
-An **embedding** is a learned vector. The embedding table contains one vector for each vocabulary item.
+```mermaid
+flowchart LR
+    A["Raw text<br/>The bottleneck moved."] --> B["Tokens<br/>the | bottleneck | moved | ."]
+    B --> C["Token IDs<br/>439 | 102 | 308 | 10"]
+    C --> D["Embedding-table lookup"]
+    D --> E["Four vectors<br/>64 numbers per token"]
+```
 
-A **weight** is a number that the neural network can change. The model has 135,936 weights and other trainable parameters.
-
-The **loss** measures prediction error. A smaller loss means that the model gave more probability to the correct next tokens.
-
-A **gradient** shows how a small change to a parameter can change the loss. The AdamW optimizer uses gradients to update the parameters.
+![A hand-drawn sketch of raw text becoming tokens, token IDs, and embedding vectors](docs/images/tokenization-process-sketch.png)
 
 ## Step 1 — Select the corpus
 
