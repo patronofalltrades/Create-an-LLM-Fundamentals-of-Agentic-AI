@@ -96,6 +96,10 @@ The extraction script downloaded the public essay page. The script selected the 
 
 The extraction produced no warnings. The [corpus manifest](results/essay-baseline/corpus_manifest.json) contains the source name, file hash, preview, and passage counts.
 
+The sketch shows the extraction sequence. The script filters the essay before the notebook creates passages and combines the corpora.
+
+![A hand-drawn sketch of essay filtering, passage splitting, and corpus deduplication](docs/images/corpus-extraction-sketch.png)
+
 | Corpus measurement | Result |
 | --- | ---: |
 | Essay characters | 16,620 |
@@ -243,6 +247,10 @@ Open the complete sample files: [step 0](results/essay-baseline/samples/step_000
 ## Step 11 — Inspect one token and its embedding
 
 The token `bottleneck` has token ID 102. The ID selects row 102 from the token-embedding table.
+
+The sketch shows the lookup from the token to embedding row 102. It also shows how the vector and its nearest neighbors changed during training.
+
+![A hand-drawn sketch of the bottleneck token ID, embedding row, and learned neighbor relationships](docs/images/embedding-inspection-sketch.png)
 
 The initial 64-number vector was:
 
