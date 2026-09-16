@@ -16,6 +16,8 @@ The main artifact in this repository is the fully executed [`custom_llm.ipynb`](
 
 [**Open the executed Jupyter notebook →**](custom_llm.ipynb)
 
+I re-executed all nine code cells in a fresh local Jupyter kernel with NumPy 2.0.2 and PyTorch 2.8.0. The run completed without errors or warning outputs. Its loss measurements, inspections, and generated samples matched the published baseline. Runtime depends on the local environment, so the 19.19-second measurement in `results/essay-baseline` remains the canonical final-run timing.
+
 ## Files to inspect
 
 - [**Executed Jupyter notebook — primary project artifact**](custom_llm.ipynb)
@@ -370,10 +372,10 @@ A later experiment can use one officially released CIA or FBI document. That exp
 
 ## Reproduce the experiment
 
-1. Create a Python environment.
-2. Install the packages in `requirements.txt`.
+1. Create and activate a Python environment. For example, run `python3 -m venv .venv` and `source .venv/bin/activate` on macOS or Linux.
+2. Install the complete dependency set with `python -m pip install -r requirements.txt`. This includes NumPy for PyTorch's tensor-to-NumPy support.
 3. Put the permitted essay Markdown file in `corpus/`.
-4. Open `custom_llm.ipynb` in Jupyter.
+4. Start Jupyter with `jupyter lab` and open `custom_llm.ipynb`.
 5. Confirm `CORPUS = "classroom"`.
 6. Confirm `TRAINING_STEPS = 3000`.
 7. Confirm `LEARNING_RATE = 0.001`.
