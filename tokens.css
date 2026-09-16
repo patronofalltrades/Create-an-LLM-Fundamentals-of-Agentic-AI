@@ -1,0 +1,33 @@
+/* Hallmark · pre-emit critique: P4 H4 E4 S5 R5 V4 · genre: modern-minimal · macrostructure: Workbench · theme: Cobalt · tone: technical · anchor hue: electric cobalt · enrichment: none · nav: N13 · footer: Ft5 */
+:root{
+  --color-paper:oklch(98.5% .004 250);
+  --color-paper-2:oklch(95% .008 250);
+  --color-surface:oklch(100% .002 250);
+  --color-ink:oklch(24% .02 258);
+  --color-muted:oklch(43% .018 257);
+  --color-rule:oklch(88% .01 252);
+  --color-accent:oklch(58% .20 256);
+  --color-accent-ink:oklch(99% .002 250);
+  --color-signal:oklch(74% .16 84);
+  --color-focus:oklch(48% .20 256);
+  --color-graphite:oklch(22% .016 260);
+  --color-shadow:oklch(24% .02 258 / .22);
+  --color-overlay:oklch(24% .02 258 / .42);
+  --font-display:"Space Grotesk","Avenir Next",ui-sans-serif,sans-serif;
+  --font-body:"IBM Plex Sans","Segoe UI",ui-sans-serif,sans-serif;
+  --font-mono:"JetBrains Mono","SFMono-Regular",ui-monospace,monospace;
+  --space-xs:4px;
+  --space-sm:8px;
+  --space-md:16px;
+  --space-lg:24px;
+  --space-xl:40px;
+  --space-2xl:64px;
+  --radius-sm:6px;
+  --radius-md:10px;
+  --ease-out:cubic-bezier(.16,1,.3,1);
+  --ease-in:cubic-bezier(.7,0,.84,0);
+  --ease-in-out:cubic-bezier(.65,0,.35,1);
+  --dur-micro:120ms;
+  --dur-short:220ms;
+  --dur-long:420ms;
+}
