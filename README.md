@@ -2,21 +2,169 @@
 
 ![A small LLM robot training on a token treadmill while training loss falls and validation loss rises](docs/assets/llm-training-gym.png)
 
-This repository contains my completed language-model experiment. I used the supplied nanoGPT notebook. I trained the model from random weights.
+## Assignment evidence
 
-The training data contains the classroom corpus and the main prose from my essay, [“The New World’s Bottleneck”](https://hanif.info/posts/the-new-worlds-bottleneck.html).
+- [Executed starter-corpus notebook](custom_llm_starter.ipynb)
+- [Executed expanded-corpus notebook](custom_llm_expanded.ipynb)
+- [Starter run evidence](results/starter-evals/)
+- [Expanded run evidence](results/expanded-evals/)
+- [Unchanged 48-case suite](evals/language_evals.json) and [eval guide](evals/README.md)
+- [Rerunnable eval program](run_evals.py) and [terminal chat interface](chat.py)
+- [Focused extension corpus](corpus-extension/extension-training.md)
 
-The model is small. It has 135,936 parameters. It uses word and punctuation tokens. It is not a general chatbot.
+The main [`custom_llm.ipynb`](custom_llm.ipynb) is the executed expanded-corpus
+experiment. The separate starter notebook preserves the control run.
 
-This README explains each process in the experiment. It also gives the measured results from the final run.
+### Four required eval result sets
 
-## Start with the Jupyter notebook
+The all-case success rate uses all 48 cases, so an out-of-vocabulary case receives
+zero. Scorable accuracy uses only cases whose prompt and four choices exist in that
+model's vocabulary. Coverage is the scorable share of all 48 cases.
 
-The main artifact in this repository is the fully executed [`custom_llm.ipynb`](custom_llm.ipynb) notebook. It contains the complete experiment from corpus preparation and tokenization through model training, evaluation, embedding inspection, and text generation. Its saved cell outputs show the evidence from the final 3,000-step run, so the results can be reviewed directly on GitHub without rerunning the notebook.
+| Experiment and stage | Correct / 48 | All-case success | Correct / scorable | Scorable accuracy | Coverage |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Starter, untrained | 9 / 48 | 18.75% | 9 / 24 | 37.50% | 50.00% |
+| Starter, trained | 20 / 48 | 41.67% | 20 / 24 | 83.33% | 50.00% |
+| Expanded, untrained | 5 / 48 | 10.42% | 5 / 30 | 16.67% | 62.50% |
+| Expanded, trained | 28 / 48 | 58.33% | 28 / 30 | 93.33% | 62.50% |
 
-[**Open the executed Jupyter notebook →**](custom_llm.ipynb)
+Complete case-level evidence is available as JSON and CSV:
 
-I re-executed all nine code cells in a fresh local Jupyter kernel with NumPy 2.0.2 and PyTorch 2.8.0. The run completed without errors or warning outputs. Its loss measurements, inspections, and generated samples matched the published baseline. Runtime depends on the local environment, so the 19.19-second measurement in `results/essay-baseline` remains the canonical final-run timing.
+- Starter: [untrained results](results/starter-evals/language_evals/untrained/eval_results.json), [trained results](results/starter-evals/language_evals/final/eval_results.json), and [comparison](results/starter-evals/language_eval_comparison.json)
+- Expanded: [untrained results](results/expanded-evals/language_evals/untrained/eval_results.json), [trained results](results/expanded-evals/language_evals/final/eval_results.json), and [comparison](results/expanded-evals/language_eval_comparison.json)
+
+### What changed in the expanded corpus
+
+I selected **grammar** and **opposites**. I added 109 unique passages with varied
+singular/plural agreement, past actions, and contrasting qualities. The examples
+use different subjects and situations from the eval cases. I added ordinary words
+such as `bird`, `walks`, `warm`, and `soft` inside natural sentences rather than
+copying test prompts or answer lists.
+
+| Measurement | Starter | Expanded |
+| --- | ---: | ---: |
+| Added files | 0 | 1 |
+| Added unique passages | 0 | 109 |
+| Total unique passages | 4,592 | 4,701 |
+| Training passages | 4,132 | 4,230 |
+| Validation passages | 460 | 471 |
+| Vocabulary size | 136 | 495 |
+| Training unknown-token rate | 0.00% | 0.00% |
+| Validation unknown-token rate | 0.00% | 0.66% |
+| Parameters | 111,872 | 134,848 |
+| Completed updates | 3,000 | 3,000 |
+| Training time | 31.47 seconds | 19.78 seconds |
+
+The expanded vocabulary made all three grammar and all three opposites cases
+scorable. The trained expanded model answered grammar 3/3 and opposites 1/3. It
+still chose `fast` instead of `cold` and `round` instead of `quiet`. This is useful
+failure evidence: vocabulary coverage made a case measurable, but did not guarantee
+that the model learned the intended relationship.
+
+| Final category | Starter | Expanded |
+| --- | ---: | ---: |
+| Domain context | 8 / 8 | 8 / 8 |
+| Domain place | 8 / 8 | 8 / 8 |
+| New wording | 4 / 8 | 8 / 8 |
+| Grammar | 0 / 3, unscorable | 3 / 3 |
+| Opposites | 0 / 3, unscorable | 1 / 3 |
+| Negation | 0 / 3, unscorable | 0 / 3, unscorable |
+| References | 0 / 3, unscorable | 0 / 3, unscorable |
+| Sequence | 0 / 3, unscorable | 0 / 3, unscorable |
+| Spatial relations | 0 / 3, unscorable | 0 / 3, unscorable |
+| Everyday knowledge | 0 / 3, unscorable | 0 / 3, unscorable |
+| Categories and analogies | 0 / 3, unscorable | 0 / 3, unscorable |
+
+### Loss evidence
+
+The notebooks used fixed 20-passage training and validation panels. The loss values
+are estimates for each model's own vocabulary and corpus; they are not directly
+comparable between the two experiments.
+
+| Experiment | Step | Training loss | Validation loss |
+| --- | ---: | ---: | ---: |
+| Starter | 0 | 4.9263 | 4.9275 |
+| Starter | 1,500 | 0.6821 | 0.7182 |
+| Starter | 3,000 | 0.6783 | 0.7061 |
+| Expanded | 0 | 6.1971 | 6.2262 |
+| Expanded | 1,500 | 0.8571 | 0.7047 |
+| Expanded | 3,000 | 0.7807 | 0.6933 |
+
+Both runs completed without interruption on an Apple Silicon CPU with Python 3.9.6
+and PyTorch 2.8.0. See the starter [history](results/starter-evals/history.json) and
+[training summary](results/starter-evals/training_summary.json), and the expanded
+[history](results/expanded-evals/history.json) and [training summary](results/expanded-evals/training_summary.json).
+
+### Separation from training
+
+The suite SHA-256 is
+`1d7c503f34d88260d0ac897bc36b8ba621cccc1950aef47e7121e69b2c1c9e1d`
+in both runs. The eval files live in `evals/`; the starter teaching folder is
+`corpus-starter/`; and the expanded teaching folder is `corpus-extension/`.
+Before either split or vocabulary build, the notebook removed 160 generated
+classroom passages that contained reserved eval prefixes. It also rejected exact
+normalized prompt matches in imported teaching files.
+
+See the starter [separation audit](results/starter-evals/eval_separation.json) and
+the expanded [separation audit](results/expanded-evals/eval_separation.json). This
+check cannot detect every paraphrase or semantic leak, so I also inspected the added
+source. Because I read these public tests while improving coverage, I describe them
+as a fixed development benchmark, not an untouched test of generalization.
+
+### Free continuations and working interface
+
+The four-choice score ranks candidate next words. The separately generated free
+continuation can still be poor. For example, the expanded model correctly selected
+`walked` after `yesterday she`, but its free continuation was
+`is delivery the brand shelf .` It selected the wrong candidate `fast` after
+`the opposite of hot is`. These results show why the constrained score should not
+be described as fluent reasoning or chat ability.
+
+I also ran three real prompts through the saved expanded model:
+
+![Three actual interactions with the expanded-corpus model](docs/assets/chat-transcript.svg)
+
+The exact machine-readable record is [chat_transcript_cli.json](results/expanded-evals/chat_transcript_cli.json).
+The awkward replies are preserved rather than hidden. They demonstrate that the
+interface uses the trained model while also showing its main limitation.
+
+To rerun the evals or chat locally:
+
+```sh
+python -m pip install -r requirements.txt
+python run_evals.py --model results/expanded-evals/model.pt --output results/rerun-expanded-evals
+python chat.py --model results/expanded-evals/model.pt --transcript results/my-chat.json
+```
+
+Use a fresh output path because both programs protect existing evidence. The model
+has a 48-token context, replaces unknown prompt words with `<UNK>`, and starts each
+chat prompt with fresh context. Chat does not retrain the model.
+
+### Development and grading flags
+
+- `results/essay-baseline/` is a valid earlier learning experiment, but it predates
+  the 48-case requirement and does not substitute for the four result sets above.
+- The hosted embedding viewer still displays the earlier essay baseline. Use the
+  new `checkpoint.json` files for the updated starter or expanded embeddings.
+- Changing the corpus changes the vocabulary size and parameter count. The two
+  untrained rows are separate random models, so raw loss and initial accuracy are
+  not controlled comparisons across vocabularies.
+- Exact-match leakage checks do not detect every paraphrase. Manual source review
+  remains part of the separation claim.
+- Rerunning after editing the corpus creates different evidence. Do not combine
+  files from different run directories.
+
+## Earlier essay baseline (supplemental evidence)
+
+The original project used the classroom corpus plus the main prose from my essay,
+[“The New World’s Bottleneck”](https://hanif.info/posts/the-new-worlds-bottleneck.html).
+It remains useful for inspecting embeddings, gradients, samples, and overfitting,
+but the updated eval experiments above are now the primary grading evidence.
+
+[**Open the earlier result files →**](results/essay-baseline/)
+
+The earlier 3,000-step run completed without errors. Its 19.19-second timing and
+135,936-parameter configuration remain recorded in `results/essay-baseline`.
 
 ## Files to inspect
 
