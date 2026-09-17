@@ -33,6 +33,11 @@ Complete case-level evidence is available as JSON and CSV:
 - Starter: [untrained results](results/starter-evals/language_evals/untrained/eval_results.json), [trained results](results/starter-evals/language_evals/final/eval_results.json), and [comparison](results/starter-evals/language_eval_comparison.json)
 - Expanded: [untrained results](results/expanded-evals/language_evals/untrained/eval_results.json), [trained results](results/expanded-evals/language_evals/final/eval_results.json), and [comparison](results/expanded-evals/language_eval_comparison.json)
 
+### Current experiment files
+
+- Starter: [configuration](results/starter-evals/config.json), [corpus manifest](results/starter-evals/corpus_manifest.json), [vocabulary report](results/starter-evals/vocabulary_report.json), [tokenization](results/starter-evals/tokenization.json), [inspection](results/starter-evals/inspection.json), [training CSV](results/starter-evals/training.csv), and [temperature comparison](results/starter-evals/temperature_comparison.json).
+- Expanded: [configuration](results/expanded-evals/config.json), [corpus manifest](results/expanded-evals/corpus_manifest.json), [vocabulary report](results/expanded-evals/vocabulary_report.json), [tokenization](results/expanded-evals/tokenization.json), [inspection](results/expanded-evals/inspection.json), [training CSV](results/expanded-evals/training.csv), and [temperature comparison](results/expanded-evals/temperature_comparison.json).
+
 ### What changed in the expanded corpus
 
 I selected **grammar** and **opposites**. I added 109 unique passages with varied
@@ -40,6 +45,11 @@ singular/plural agreement, past actions, and contrasting qualities. The examples
 use different subjects and situations from the eval cases. I added ordinary words
 such as `bird`, `walks`, `warm`, and `soft` inside natural sentences rather than
 copying test prompts or answer lists.
+
+I wrote the focused teaching material for this course and permit its inclusion in
+this public repository. Before training, I predicted that the added words would
+raise coverage for grammar and opposites, while correct next-word choices could
+still remain limited because this is a small model trained on a narrow corpus.
 
 | Measurement | Starter | Expanded |
 | --- | ---: | ---: |
@@ -95,6 +105,18 @@ and PyTorch 2.8.0. See the starter [history](results/starter-evals/history.json)
 [training summary](results/starter-evals/training_summary.json), and the expanded
 [history](results/expanded-evals/history.json) and [training summary](results/expanded-evals/training_summary.json).
 
+### Generated samples
+
+Both notebooks use the same generation settings at step 0, halfway, and the final
+step within their own experiment. The untrained samples are scattered word lists;
+the final samples use short classroom-style sentence patterns. The expanded model
+still does not reliably use its new grammar or contrast material in free text.
+
+| Experiment | Step 0 | Step 1,500 | Step 3,000 |
+| --- | --- | --- | --- |
+| Starter | [sample](results/starter-evals/samples/step_0000.txt) | [sample](results/starter-evals/samples/step_1500.txt) | [sample](results/starter-evals/samples/step_3000.txt) |
+| Expanded | [sample](results/expanded-evals/samples/step_0000.txt) | [sample](results/expanded-evals/samples/step_1500.txt) | [sample](results/expanded-evals/samples/step_3000.txt) |
+
 ### Separation from training
 
 The suite SHA-256 is
@@ -128,6 +150,13 @@ The exact machine-readable record is [chat_transcript_cli.json](results/expanded
 The awkward replies are preserved rather than hidden. They demonstrate that the
 interface uses the trained model while also showing its main limitation.
 
+### Proposed next experiment
+
+Keep the architecture, seed, learning rate, 3,000-step budget, and fixed eval suite
+unchanged. Add only more varied, non-eval opposites examples, then compare the same
+three opposites cases and their free continuations. Because these public cases guide
+that change, also reserve a separate unseen set before claiming broader transfer.
+
 To rerun the evals or chat locally:
 
 ```sh
@@ -144,8 +173,9 @@ chat prompt with fresh context. Chat does not retrain the model.
 
 - `results/essay-baseline/` is a valid earlier learning experiment, but it predates
   the 48-case requirement and does not substitute for the four result sets above.
-- The hosted embedding viewer still displays the earlier essay baseline. Use the
-  new `checkpoint.json` files for the updated starter or expanded embeddings.
+- The hosted embedding viewer now bundles the expanded-corpus model as its reference.
+  The earlier essay-baseline embeddings remain in `results/essay-baseline/` and can
+  still be loaded into the viewer from that checkpoint.
 - Changing the corpus changes the vocabulary size and parameter count. The two
   untrained rows are separate random models, so raw loss and initial accuracy are
   not controlled comparisons across vocabularies.
@@ -182,7 +212,7 @@ The earlier 3,000-step run completed without errors. Its 19.19-second timing and
 - [Training summary](results/essay-baseline/training_summary.json)
 - [Temperature comparison](results/essay-baseline/temperature_comparison.json)
 - [Embedding viewer](embedding-viewer.html). Load [checkpoint.json](results/essay-baseline/checkpoint.json) in the viewer.
-- [Hosted embedding explorer](https://patronofalltrades.github.io/Customer-LLM-Fundamentals-of-Agentic-AI/). Inspect the recorded model evidence in the browser.
+- [Hosted embedding explorer](https://patronofalltrades.github.io/Create-an-LLM-Fundamentals-of-Agentic-AI/). Inspect the recorded model evidence in the browser.
 
 ## Visual proof of training
 
