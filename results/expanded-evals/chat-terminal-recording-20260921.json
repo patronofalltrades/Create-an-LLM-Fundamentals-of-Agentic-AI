@@ -1,0 +1,39 @@
+{
+  "model": "results/expanded-evals/model.pt",
+  "model_sha256": "3c9f8f378cae2a589786c2b92c1de3114f4a8723f7b9444c3ce593492727bd16",
+  "completed_steps": 3000,
+  "fresh_context_per_prompt": true,
+  "temperature": 0.8,
+  "max_tokens": 24,
+  "turns": [
+    {
+      "prompt": "Technology is",
+      "seed": 2026,
+      "response": "leaning lecturer shopper is at the leaning .",
+      "unknown_prompt_words": [
+        "technology"
+      ],
+      "prompt_truncated": false
+    },
+    {
+      "prompt": "The future of humanity depends on",
+      "seed": 2027,
+      "response": "our reviewing a smooth after peach .",
+      "unknown_prompt_words": [
+        "depends",
+        "future",
+        "humanity"
+      ],
+      "prompt_truncated": false
+    },
+    {
+      "prompt": "tomorrow, our professor will",
+      "seed": 2028,
+      "response": "she to helped us understand bank .",
+      "unknown_prompt_words": [
+        "will"
+      ],
+      "prompt_truncated": false
+    }
+  ]
+}
